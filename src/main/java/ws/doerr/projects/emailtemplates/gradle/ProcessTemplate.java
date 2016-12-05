@@ -69,7 +69,7 @@ public class ProcessTemplate extends DefaultTask {
 
     @TaskAction
     public void run() throws Exception {
-        CssInliner inliner = new CssInliner(version, removeComments);
+        CssInliner inliner = new CssInliner(meta, removeComments);
 
         Set<String> sources = HtmlFileUtilities.getSourcesPaths(getProject().getProjectDir(), sourcePackage);
         for(String source : sources) {
