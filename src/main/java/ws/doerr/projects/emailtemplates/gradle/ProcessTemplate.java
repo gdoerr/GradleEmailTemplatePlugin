@@ -36,6 +36,7 @@ package ws.doerr.projects.emailtemplates.gradle;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -58,8 +59,8 @@ public class ProcessTemplate extends DefaultTask {
     private final SimpleDateFormat formatter;
 
     private @Input String sourcePackage = "";
-    private @Input String version = "";
     private @Input Boolean removeComments = true;
+    private Map<String, String> meta = new HashMap<>();
 
     public ProcessTemplate() {
         formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -99,19 +100,24 @@ public class ProcessTemplate extends DefaultTask {
         this.sourcePackage = sourcePackage;
     }
 
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
     public Boolean getRemoveComments() {
         return removeComments;
     }
 
     public void setRemoveComments(Boolean removeComments) {
         this.removeComments = removeComments;
+    }
+    
+    public @Input Map getMeta() {
+        return Collections.unmodifiableMap(meta);
+    }
+    
+    void setMeta(Map meta) {
+        this.meta.clear();
+        this.meta.putAll(meta);
+    }
+    
+    void meta(Map meta) {
+        this.meta.putAll(meta);
     }
 }
