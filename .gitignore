@@ -49,3 +49,4 @@ Temporary Items
 #Netbeans / Gradle files
 .gradle
 .nb-gradle
+/build/

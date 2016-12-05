@@ -47,7 +47,7 @@ import java.util.Set;
 
 /**
  *
- * @author Greg Doerr <greg.doerr@credicousa.com>
+ * @author Greg Doerr
  */
 public class HtmlFileUtilities {
     private static final String SOURCE_PATH = File.separator + "src" + File.separator + "main" + File.separator + "java" + File.separator;

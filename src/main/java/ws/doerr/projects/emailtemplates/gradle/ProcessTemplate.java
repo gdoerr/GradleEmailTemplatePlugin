@@ -50,7 +50,7 @@ import ws.doerr.projects.emailtemplates.CssInliner;
 
 /**
  *
- * @author Greg Doerr <greg.doerr@credicousa.com>
+ * @author Greg Doerr
  */
 public class ProcessTemplate extends DefaultTask {
     private static final Logger LOG = Logger.getLogger(ProcessTemplate.class.getName());

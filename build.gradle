@@ -13,6 +13,7 @@ plugins {
     id "java-gradle-plugin"
 }
 
+apply plugin: "java"
 apply plugin: "com.gradle.plugin-publish"
 
 repositories {
@@ -21,17 +22,16 @@ repositories {
 
 dependencies {
     compile gradleApi()
-    compile "org.jsoup:jsoup:+"
-    compile "net.htmlparser.jericho:jericho-html:+"
-    compile "net.sourceforge.cssparser:cssparser:+"
-    compile "com.google.guava:guava:+"
-    compile "ws.doerr.projects.emailtemplates:EmailTemplateLibrary:+"
+    compile "ws.doerr.projects.emailtemplates:EmailTemplateLibrary:0.1.0"
 }
+
+version = "0.1.1"
+group = "ws.doerr.projects.emailtemplates"
 
 gradlePlugin {
     plugins {
-        emailTemplate {
-            id = "ws.doerr.projects.emailtemplates.gradle"
+        emailTemplatePlugin {
+            id = "ws.doerr.projects.emailtemplates.gradleplugin"
             implementationClass = "ws.doerr.projects.emailtemplates.gradle.EmailTemplatePlugin"
         }
     }
@@ -39,7 +39,7 @@ gradlePlugin {
 
 pluginBundle {
     // These settings are set for the whole plugin bundle
-    website = 'http://www.gradle.org/'
+    website = 'http://gdoerr.github.io/CssInliner/'
     vcsUrl = 'https://github.com/gdoerr/gradleemailtemplate'
 
     // tags and description can be set for the whole bundle here, but can also
@@ -68,7 +68,6 @@ pluginBundle {
             id = 'ws.doerr.projects.emailtemplates.gradleplugin'
             displayName = 'Gradle Email Template plugin'
             tags = ['email', 'template', 'handlebars', 'mandrill', 'plugin']
-            version = '0.1.0'
         }
     }
 }
