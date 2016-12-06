@@ -1,20 +1,26 @@
 buildscript {
   repositories {
     maven {
-      url "https://plugins.gradle.org/m2/"
+      url 'https://plugins.gradle.org/m2/'
     }
   }
   dependencies {
-    classpath "com.gradle.publish:plugin-publish-plugin:0.9.6"
+    classpath 'com.gradle.publish:plugin-publish-plugin:0.9.6'
   }
 }
 
 plugins {
-    id "java-gradle-plugin"
+    id 'java'
+    id 'java-gradle-plugin'
+    id 'org.ajoberstar.grgit' version '1.6.0'
 }
 
-apply plugin: "java"
-apply plugin: "com.gradle.plugin-publish"
+apply plugin: 'com.gradle.plugin-publish'
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-Xlint'
+}
 
 repositories {
     mavenCentral()
@@ -22,10 +28,10 @@ repositories {
 
 dependencies {
     compile gradleApi()
-    compile "ws.doerr.projects.emailtemplates:EmailTemplateLibrary:0.1.0"
+    compile "ws.doerr.projects.emailtemplates:EmailTemplateLibrary:0.3.1"
 }
 
-version = "0.1.1"
+version = "${version}"
 group = "ws.doerr.projects.emailtemplates"
 
 gradlePlugin {
@@ -46,24 +52,7 @@ pluginBundle {
     // be set / overridden in the config for specific plugins
     description = 'Gradle Email Template Plugin'
 
-    // The plugins block can contain multiple plugin entries.
-    //
-    // The name for each plugin block below (greetingsPlugin, goodbyePlugin)
-    // does not affect the plugin configuration, but they need to be unique
-    // for each plugin.
-
-    // Plugin config blocks can set the id, displayName, version, description
-    // and tags for each plugin.
-
-    // id and displayName are mandatory.
-    // If no version is set, the project version will be used.
-    // If no tags or description are set, the tags or description from the
-    // pluginBundle block will be used, but they must be set in one of the
-    // two places.
-
     plugins {
-
-        // first plugin
         emailTemplatePlugin {
             id = 'ws.doerr.projects.emailtemplates.gradleplugin'
             displayName = 'Gradle Email Template plugin'
@@ -71,3 +60,30 @@ pluginBundle {
         }
     }
 }
+
+task extractGit {
+    def grgit = org.ajoberstar.grgit.Grgit.open(project.rootDir)
+}
+
+//
+// Configure the MANIFEST.MF
+//
+jar {
+    manifest {
+        attributes\
+            'Project': "${rootProject.name}",
+            'Build-By': System.getProperty('user.name'),
+            'Build-Date': new Date(),
+            'Build-JDK': System.getProperty('java.version'),
+            'Build-Host': java.net.InetAddress.getLocalHost().getHostName(),
+            'Build-Gradle': GradleVersion.current().toString(),
+            'Repo': grgit.remote.list().getAt(0).url ?: '',
+            'Version': version ?: '',
+            'Branch': grgit.status().clean ? grgit.branch.getCurrent().name : 'DEVELOPMENT',
+            'CommitId': grgit.status().clean ? grgit.head().id : 'DEVELOPMENT',
+            'CommitDate': grgit.status().clean ? grgit.head().date : 'DEVELOPMENT',
+            'License': 'MIT'
+    }
+}
+
+jar.dependsOn extractGit

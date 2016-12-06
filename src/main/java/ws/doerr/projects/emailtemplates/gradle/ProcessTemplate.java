@@ -1,43 +1,36 @@
 /*
- *  **************************************************************************
- *                     Copyright © 2016-2016 Credico USA, LLC
- *                            All Rights Reserved.
- *      ------------------------------------------------------------------
+ * The MIT License
  *
- *      Credico USA, LLC
- *      525 West Monroe, Suite 900
- *      Chicago, IL 60661
- *      software@credicousa.com
+ * Copyright 2016 Greg Doerr.
  *
- *      ------------------------------------------------------------------
- *  Copyright © 2014-2016. Credico USA, LLC. All Rights Reserved.
- *  Permission to use, copy, modify, and distribute this software and its
- *  documentation for educational, research, and not-for-profit purposes,
- *  without fee and without a signed licensing agreement, is hereby granted,
- *  provided that this copyright notice, this paragraph and the following two
- *  paragraphs appear in all copies, modifications, and distributions.
- *  Contact Credico USA, LLC. at software@credicousa.com for
- *  commercial licensing opportunities.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  IN NO EVENT SHALL CREDICO USA, LLC. BE LIABLE TO ANY PARTY FOR DIRECT,
- *  INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
- *  PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- *  EVEN IF CREDICO HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- *  CREDICO USA, LLC. SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- *  PARTICULAR PURPOSE. THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY,
- *  PROVIDED HEREUNDER IS PROVIDED "AS IS". CREDICO USA, LLC. HAS NO OBLIGATION
- *  TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
- *  **************************************************************************
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package ws.doerr.projects.emailtemplates.gradle;
 
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
@@ -47,7 +40,8 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
-import ws.doerr.projects.emailtemplates.CssInliner;
+import org.gradle.util.CollectionUtils;
+import ws.doerr.projects.emailtemplates.TemplateProcessor;
 
 /**
  *
@@ -58,9 +52,9 @@ public class ProcessTemplate extends DefaultTask {
 
     private final SimpleDateFormat formatter;
 
-    private @Input String sourcePackage = "";
     private @Input Boolean removeComments = true;
-    private Map<String, String> meta = new HashMap<>();
+    private final List<String> sourcePackages = new ArrayList<>();
+    private final Map<String, String> meta = new HashMap<>();
 
     public ProcessTemplate() {
         formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -69,18 +63,20 @@ public class ProcessTemplate extends DefaultTask {
 
     @TaskAction
     public void run() throws Exception {
-        CssInliner inliner = new CssInliner(meta, removeComments);
+        TemplateProcessor processor = new TemplateProcessor(meta, removeComments);
 
+        sourcePackages.forEach(sourcePackage -> {
         Set<String> sources = HtmlFileUtilities.getSourcesPaths(getProject().getProjectDir(), sourcePackage);
-        for(String source : sources) {
-            try {
-                LOG.log(Level.SEVERE, "");
-                inliner.process(Paths.get(source), Paths.get(HtmlFileUtilities.getTargetFilename(getProject().getProjectDir(), source)));
-            } catch(Exception ex) {
-                LOG.log(Level.WARNING, MessageFormat.format("Exception processing {0}", source), ex);
-                throw(ex);
+            for(String source : sources) {
+                try {
+                    LOG.log(Level.SEVERE, "");
+                    processor.process(Paths.get(source), Paths.get(HtmlFileUtilities.getTargetFilename(getProject().getProjectDir(), source)));
+                } catch(Exception ex) {
+                    LOG.log(Level.WARNING, MessageFormat.format("Exception processing {0}", source), ex);
+                    //throw(ex);
+                }
             }
-        }
+        });
     }
 
     public static void addTask(Project project) {
@@ -92,14 +88,6 @@ public class ProcessTemplate extends DefaultTask {
         project.task(args, "emailtemplates");
     }
 
-    public String getSourcePackage() {
-        return sourcePackage;
-    }
-
-    public void setSourcePackage(String sourcePackage) {
-        this.sourcePackage = sourcePackage;
-    }
-
     public Boolean getRemoveComments() {
         return removeComments;
     }
@@ -107,16 +95,32 @@ public class ProcessTemplate extends DefaultTask {
     public void setRemoveComments(Boolean removeComments) {
         this.removeComments = removeComments;
     }
-    
+
+    public @Input List<String> getSourcePackages() {
+        return CollectionUtils.stringize(sourcePackages);
+    }
+
+    public void setSourcePackages(String... args) {
+        sourcePackages.clear();
+        sourcePackages.addAll(Arrays.asList(args));
+    }
+
+    public void sourcePackages(String... args) {
+        sourcePackages.addAll(Arrays.asList(args));
+    }
+
+    @SuppressWarnings("rawtypes")
     public @Input Map getMeta() {
         return Collections.unmodifiableMap(meta);
     }
-    
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
     void setMeta(Map meta) {
         this.meta.clear();
         this.meta.putAll(meta);
     }
-    
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
     void meta(Map meta) {
         this.meta.putAll(meta);
     }
